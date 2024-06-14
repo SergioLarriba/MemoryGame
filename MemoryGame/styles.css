@@ -59,4 +59,10 @@ a{
 	font-weight: bold;
 	margin-bottom: 20px;
 	cursor: pointer;
+	border-radius: 8px;
+	transition: background-color 0.3s ease;
+}
+.reset-btn:hover {
+	color: white;
+	background-color: rgb(16, 55, 182);
 }
