@@ -1,0 +1,65 @@
+body {
+	background-color: #272727;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	margin: 0; 
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.juego-memoria-contenedor {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	border: 1px solid white; 
+	border-radius: 10px;
+	gap: 5px; 
+}
+
+.juego-memoria-titulo {
+	color: white;
+	font-size: 1.5em;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.juego-memoria-tableroNumeros {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 3px; 
+	padding: 10px;
+}
+
+.juego-memoria-btn {
+	font-size: 2em;
+	width: 2em;
+	height: 2em;
+	background-color: white;
+	border: none;
+	cursor: pointer;
+}
+
+.selected {
+	background-color: rgb(0, 255, 42);
+	color: black; 
+}
+
+.not-coincidence {
+	background-color: rgb(230, 59, 59);
+	color: black; 
+}
+
+#winner-message {
+	display: none; 
+	justify-content: center;
+	align-items: center;
+	color: white;
+	border: 1px solid white;
+	border-radius: 10px;
+}
+
+#winner-message.finished {
+	display: block;
+}
