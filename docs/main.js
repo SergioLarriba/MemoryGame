@@ -1,93 +1,124 @@
-let btnsClicked = []; 
-let maxClicked = 2; 
+// Inicializacion de variables
+let tarjetas_destapadas = 0; 
+let tarjeta1 = null; 
+let tarjeta2 = null; 
+let primerResultado = null; 
+let segundoResultado = null; 
+let movimientos = 0; 
+let aciertos = 0; 
+let temporizador = false; 
+let timer = 30; 
+let tiempoSetInterval = null; 
 
-// Asigno la funcion handleClick como manejador de clicks
-document.querySelectorAll('.juego-memoria-btn').forEach(button => {
-	button.addEventListener('click', handleClick); 
-})
+// Apuntando a documento HTML
+let mostrarMovimientos = document.getElementById("movimientos"); 
+let mostrarAciertos = document.getElementById("aciertos"); 
+let mostrarTiempo = document.getElementById("t-restante"); 
 
-// Funcionalidad principal del juego
-function handleClick(event) {
-	const button = event.target;
-	button.innerText = button.getAttribute('data-number'); 
+// Array de numeros aleatorios
+let numeros = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8]; 
+numeros = numeros.sort(() => {
+	return Math.random()-0.5
+}); 
 
-	// Inserto el botón en el array de botones clicados si no lo contiene ya
-	if (!btnsClicked.includes(button)) btnsClicked.push(button); 
-
-	// Si se alcanzan los máximos clicks -> comparo botones y evito que el usuario de clicks
-	if (btnsClicked.length === maxClicked) {
-		disableButtons(); 
-		compararBotones(); 
+// Funcion principal
+function destapar(id_boton) {
+	if (temporizador == false) {
+		contarTiempo(); 
+		temporizador = true; 
 	}
 
-	// Comprobar fin del juego -> Si todos los botones tienen algo 
-	if (checkEndGame()) {
-		setTimeout(() => {
-			const winnerMessage = document.getElementById('winner-message');
-			winnerMessage.classList.add('finished');
-		}, 800)	
+	// Aumentar contador de tarjetas destapadas
+	tarjetas_destapadas++; 
+	
+	if (tarjetas_destapadas == 1) {
+		// Mostrar primer numero
+		tarjeta1 = document.getElementById(id_boton); 
+		primerResultado = numeros[id_boton]
+		tarjeta1.innerHTML = primerResultado; 
+
+		// Deshabilitar el primer botón
+		tarjeta1.disabled = true; 
+	} else if (tarjetas_destapadas == 2) {
+		// Mostrar segundo numero
+		tarjeta2 = document.getElementById(id_boton); 
+		segundoResultado = numeros[id_boton]; 
+		tarjeta2.innerHTML = segundoResultado; 
+
+		// Deshabilitar el segundo botón
+		tarjeta2.disabled = true; 
+
+		// Incrementar y mostrar movimientos
+		movimientos++; 
+		mostrarMovimientos.innerHTML = `Movimientos ${movimientos}`; 
+
+		// Comprobar resultados
+		if (primerResultado == segundoResultado) {
+			// Resetear contador de tarjetas
+			tarjetas_destapadas = 0; 
+
+			// Aumentar y mostrar acierto
+			aciertos++; 
+			mostrarAciertos.innerHTML = `Aciertos ${aciertos}`; 
+
+			// Comprobar si el juego ha acabado
+			if (aciertos == 8) {
+				// Detener contador
+				clearInterval(tiempoSetInterval); 
+				mostrarAciertos.innerHTML = `Aciertos: ${aciertos} 🥳`;
+				mostrarMovimientos.innerHTML = `Movimientos: ${movimientos} 🥳`; 
+				mostrarTiempo.innerHTML = `Fantástico 🔥 ¡Solo tardaste ${30-timer} segundos!`; 
+			}
+		} else {
+			// Mostrar momentaneamente valores y volver a tapar
+			// setTimeout -> Ejecutar algo despues de cierto tiempo
+			setTimeout(() => {
+				// Reiniciar contenido botones
+				tarjeta1.innerHTML = ''; 
+				tarjeta2.innerHTML = ''; 
+				// Volver a habilitar botones
+				tarjeta1.disabled = false; 
+				tarjeta2.disabled = false; 
+				// Resetear el contador
+				tarjetas_destapadas = 0; 
+			}, 800); 
+		}
 	}
 }
 
-// Comparar si ha acertado o no el usuario
-function compararBotones() {
-	const [btn1, btn2] = btnsClicked; 
+const contarTiempo = () => {
+	tiempoSetInterval = setInterval(() => {
+		timer--;
+		mostrarTiempo.innerHTML = `Tiempo: ${timer} segundos`;  
+		// Parar el contador -> El jugador perdió
+		if (timer == 0) {
+			clearInterval(tiempoSetInterval); 
+			bloquearTarjetas(); 
+		}
+	}, 1000); 
+}
 
-	if (btn1.getAttribute('data-number') === btn2.getAttribute('data-number')) {
-		// Los marco como coincidencia
-		btn1.classList.add('selected'); 
-		btn2.classList.add('selected'); 
-		// Reactivar los botones despues de un pequeño retraso
-		setTimeout(enableButtons, 500); 
-	} else {
-		// Añado estas clases por tema de estilos
-		btn1.classList.add('not-coincidence'); 
-		btn2.classList.add('not-coincidence'); 
-		// Espera 1 segundo tras el click en el 2º btn para limpiarlo
-		setTimeout(() => {
-			notCoincidence(btn1, btn2); 
-			enableButtons(); 
-		}, 500);
-		
+const bloquearTarjetas = () => {
+	for (let i=0; i<=15; i++) {
+		let tarjetaBloqueada = document.getElementById(i); 
+		tarjetaBloqueada.innerHTML = numeros[i]; 
+		tarjetaBloqueada.disabled = true; 
 	}
-	btnsClicked = []; 
 }
 
-/*
- * Funciones auxiliares
- */
-
-// Funcionalidad si no hay coincidencia
-const notCoincidence = (btn1, btn2) => {
-	btn1.innerText = '';
-	btn2.innerText = '';
-	btn1.classList.remove('selected');
-	btn2.classList.remove('selected');
-	btnsClicked = [];
-	// Elimino las clases
-	btn1.classList.remove('not-coincidence');
-	btn2.classList.remove('not-coincidence');
-}
-
-// Comprobacion de si hemos acabado el juego
-const checkEndGame = () => {
-	const buttons = document.querySelectorAll('.juego-memoria-btn'); 
-	for (let button of buttons) {
-		if (!button.innerText) return false; 
+function resetGame() {
+	for (let i=0; i<=15; i++) {
+		let btn = document.getElementById(i); 
+		btn.innerHTML = ''; 
+		btn.disabled = false; 
 	}
-	return true; 
-}
-
-// Deshabilitar los botones 
-const disableButtons = () => {
-	document.querySelectorAll('.juego-memoria-btn').forEach(button => {
-		button.disabled = true; 
-	}); 
-}
-
-// Habilitar los botones 
-const enableButtons = () => {
-	document.querySelectorAll('.juego-memoria-btn').forEach(button => {
-		button.disabled = false; 
-	}); 
+	tarjetas_destapadas = 0; 
+	aciertos = 0; 
+	movimientos = 0; 
+	timer = 30; 
+	
+	clearInterval(tiempoSetInterval); 
+	mostrarAciertos.innerHTML = `Aciertos: ${aciertos}`;
+	mostrarMovimientos.innerHTML = `Movimientos: ${movimientos}`; 
+	mostrarTiempo.innerHTML = `Tiempo: ${timer} segundos`; 
 }
